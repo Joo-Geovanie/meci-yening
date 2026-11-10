@@ -1,0 +1,72 @@
+import { test, expect } from '@playwright/test';
+
+test('catalog, profile, stale results, detail, saved snapshot and download', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  await expect(page.locator('.role-card')).toHaveCount(6);
+  await expect(page.locator('.score-line')).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/catalog-desktop.png', fullPage: true });
+  await page.getByRole('button', { name: 'Lihat semua 25 peran' }).click();
+  await expect(page.locator('.role-card')).toHaveCount(25);
+  await page.getByRole('group', { name: 'Filter katalog' }).getByRole('button', { name: /Teknologi/ }).click();
+  await expect(page.locator('.role-card')).toHaveCount(4);
+  await page.locator('.presets').getByRole('button', { name: 'HR', exact: true }).click();
+  await page.getByRole('button', { name: 'Temukan peran saya' }).click();
+  await expect(page.getByRole('heading', { name: 'Rekomendasi untukmu' })).toBeVisible();
+  await expect(page.locator('.role-card')).toHaveCount(5);
+  await expect(page.locator('.role-card .field-name').first()).toHaveText('Human resources');
+  await page.getByLabel('Minat karier').fill('recruitment');
+  await expect(page.locator('.stale-note')).toBeVisible();
+  await page.getByRole('button', { name: 'Perbarui rekomendasi' }).click();
+  await expect(page.locator('.stale-note')).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/recommendation-desktop.png', fullPage: true });
+  await page.getByRole('button', { name: 'Lihat peran & skill' }).first().click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Simpan peran', exact: true }).click();
+  await page.getByText('Deskripsi pekerjaan asli', { exact: true }).click();
+  await expect(page.locator('.original-description p')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('navigation').getByRole('button', { name: /Tersimpan/ }).click();
+  await expect(page.locator('.role-card')).toHaveCount(1);
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Unduh', exact: true }).click();
+  expect((await downloadEvent).suggestedFilename()).toBe('ruang-peran-simpanan.json');
+  await page.reload();
+  await expect(page.getByLabel('Minat karier')).toHaveValue('recruitment');
+  await page.getByRole('navigation').getByRole('button', { name: /Tersimpan/ }).click();
+  await expect(page.locator('.role-card')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+test('mobile, empty search, unknown skill, reset and guide', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('.role-card')).toHaveCount(6);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/catalog-mobile.png', fullPage: true });
+  await page.getByLabel('Cari judul peran').fill('zzzznotarolezzzz');
+  await expect(page.getByRole('heading', { name: 'Belum menemukan peran yang sesuai' })).toBeVisible();
+  await page.getByRole('button', { name: 'Kosongkan pencarian', exact: true }).click();
+  await page.getByRole('textbox', { name: /^Keterampilan/ }).fill('zzzzunrecognizedskillzzzz');
+  await page.getByRole('button', { name: 'Temukan peran saya' }).click();
+  await expect(page.locator('.role-card')).toHaveCount(0);
+  await expect(page.getByText('Keterampilan dan minat belum dikenali.', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Reset profil' }).click();
+  await expect(page.locator('.selected-skills>span')).toHaveCount(0);
+  await page.getByRole('navigation').getByRole('button', { name: 'Cara kerja' }).click();
+  await expect(page.getByRole('heading', { name: 'Rekomendasi yang bisa kamu pahami.' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test('failed catalog has a working retry and corrupted storage is tolerated', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('ruang-peran-profile-v2', '{'); localStorage.setItem('ruang-peran-saved-v1', 'null'); });
+  await page.route('**/api/catalog', route => route.abort());
+  await page.goto('/');
+  await expect(page.getByRole('alert')).toBeVisible();
+  await page.unroute('**/api/catalog');
+  await page.getByRole('button', { name: 'Hubungkan ulang' }).click();
+  await expect(page.locator('.role-card')).toHaveCount(6);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});

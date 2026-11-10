@@ -1,0 +1,18 @@
+{
+  "dataset": "batuhanmtl/job-skill-set",
+  "revision": "78e2e843eada1d3c901bc7fb123eaf2dc1c3c36f",
+  "split": "train",
+  "source_url": "https://huggingface.co/datasets/batuhanmtl/job-skill-set/resolve/78e2e843eada1d3c901bc7fb123eaf2dc1c3c36f/data/train-00000-of-00001.parquet",
+  "downloaded_at_utc": "2026-11-04T13:31:42.507828+00:00",
+  "rows": 1167,
+  "columns": [
+    "job_id",
+    "category",
+    "job_title",
+    "job_description",
+    "job_skill_set"
+  ],
+  "sha256_parquet": "d3086d606e12b57e6578ed2bf20d2d302011514520f86d52e866c5b9cac5a6fa",
+  "sha256_csv": "75cf4d89d75a4b9bd7911745c0c5983fc97a523055f6470fd333fc31c6ffd2e4",
+  "conversion": "Parquet ke CSV UTF-8, index=False; tanpa pembersihan data"
+}

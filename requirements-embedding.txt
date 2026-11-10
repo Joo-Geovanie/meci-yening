@@ -1,0 +1,7 @@
+# Tambahan untuk eksperimen ketiga; API lokal tidak memerlukan paket ini.
+-r requirements.txt
+sentence-transformers==6.2.0
+transformers==5.22.1
+torch==2.15.0
+huggingface-hub==2.4.0
+tokenizers==0.23.3
