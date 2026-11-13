@@ -18,3 +18,14 @@ fieldset { padding:0; border:0; margin:0; min-width:0; } label { display:flex; a
 @media(max-width:850px) { .hero { grid-template-columns:1fr 285px; }.career-map { transform:scale(.72); }.workspace { grid-template-columns:1fr; }.profile-panel { position:static; }.profile-panel form { max-width:100%; }.presets button { padding:8px 14px; }.suggestions button { padding:6px 10px; }.results { margin-top:12px; }.profile-panel { padding:24px; }.guide { grid-template-columns:1fr; gap:30px; }.role-card { padding:22px; }.hero h1 { font-size:40px; } }
 @media(max-width:600px) { .masthead { height:auto; min-height:75px; padding:16px 5%; flex-wrap:wrap; justify-content:space-between; gap:14px; }.brand { font-size:21px; }.brand-mark { width:30px; height:30px; border-radius:8px; }nav { gap:18px; height:35px; }nav button { font-size:11px; }.hero { display:block; padding:30px 0; min-height:0; }.career-map { display:none; }.hero h1 { font-size:38px; }.hero-copy>p:not(.hero-kicker) { font-size:13px; }.hero-kicker { font-size:11px; }.hero-link { margin-top:18px; }.dataset-note { align-items:flex-start; padding:12px; margin-bottom:22px; }.dataset-note button { display:none; }.dataset-note>svg { margin-top:2px; }.results h2 { font-size:24px; }.role-grid { grid-template-columns:1fr; }.role-card { padding:23px; }.role-card h3 { font-size:19px; }.field-name { font-size:12px; }.role-meta,.preview-caption,.detail-link { font-size:12px; }.skill-tags>span { font-size:11px; }.list-toolbar input { width:135px; }.field-filters button { font-size:11px; padding:9px 10px; }.profile-panel { padding:22px; }label { font-size:13px; }input,select { font-size:13px; }.help,.local-note { font-size:11px; }.stale-note { flex-wrap:wrap; }.stale-note>span { flex:1; }.dialog-head,.dialog-footer { padding:15px 18px; }.dialog-body { padding:22px 18px; }.dialog-body h2 { font-size:23px; }.dialog-footer .primary,.dialog-footer .secondary { font-size:11px; padding:11px; }.toast { width:90%; justify-content:center; }.guide h2 { font-size:30px; }footer { flex-wrap:wrap; gap:14px; }footer>span { width:100%; order:3; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+
+.cv-panel { border-bottom: 1px solid #e2e5ef; padding: 0 0 22px; margin-bottom: 22px; }
+.cv-panel h3 { font-size: 16px; margin-bottom: 8px; }
+.cv-panel input { max-width: 100%; min-width: 0; }
+.cv-panel input[type=file] { font-size: 12px; padding: 9px 0; }
+.cv-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.cv-panel details { margin-top: 16px; font-size: 12px; }
+.cv-panel summary { cursor: pointer; }
+.cv-panel .skill-tags { margin: 12px 0; }
+.cv-file { display: flex; gap: 8px; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+.cv-error { color: #a32828; font-size: 13px; }

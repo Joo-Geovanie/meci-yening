@@ -107,3 +107,68 @@ Dataset card merujuk lisensi sumber Kaggle; jangan menganggap dataset ini berlis
 2. Validasi kandidat magang, konteks Indonesia, dan status lowongan jika produk akan dipakai untuk melamar.
 3. Konfigurasi Supabase untuk akun, profil, dan riwayat lintas perangkat. `.env.example` hanya placeholder; belum ada koneksi atau perubahan database.
 4. Deployment Railway hanya setelah diminta secara eksplisit dan konfigurasi produksi tersedia.
+
+## Unggah CV privat (Supabase)
+
+Alur: daftar/masuk dengan email → unggah PDF teks/DOCX/TXT → baca skill yang
+terdeteksi → gunakan skill CV → tinjau/hapus skill yang keliru → cari rekomendasi.
+CV disimpan di bucket **privat** `cvs` pada folder UUID pengguna, dengan nama file
+acak. Tombol Hapus tersedia pada daftar CV. Tidak ada URL publik CV.
+Batas per file **5 MB = 5.000.000 byte**, diperiksa browser, streaming backend,
+dan bucket. File kosong, format tidak valid, PDF terenkripsi/lebih dari 30 halaman,
+dan PDF tanpa teks ditolak. Belum ada OCR. DOCX membaca teks dokumen utama.
+
+Deteksi skill memakai pencocokan istilah persis dengan batas kata, bukan model
+pemahaman CV. Kalimat negatif (misalnya "belum menguasai Python") tetap bisa
+terdeteksi; pengguna harus meninjau hasil. Hingga 50 skill diterapkan ke profil.
+TF-IDF + cosine similarity tetap menggunakan skill yang ditinjau dan minat,
+bukan seluruh CV, nama, email, atau nomor telepon. Skor 0–100% adalah kemiripan,
+bukan probabilitas diterima. KNN tetap tersedia sebagai pembanding skill persis.
+File dan teks CV tidak ditaruh di localStorage; skill profil dan simpanan peran
+masih tersimpan di browser. Sesi login disimpan di memori (masuk ulang setelah reload).
+
+### Konfigurasi
+
+1. Pilih proyek Supabase khusus aplikasi ini. Jalankan `supabase/setup_cv_storage.sql`
+   di SQL Editor. Script ini adalah setup manual, bukan migration yang sudah diterapkan.
+   Periksa kebijakan lama pada `storage.objects`: jangan ada kebijakan luas yang
+   juga memberi akses ke bucket `cvs`, karena policy permissive digabung dengan OR.
+2. Aktifkan email/password di Auth. Atur Site URL dan redirect URLs ke URL frontend;
+   bila email confirmation aktif, konfirmasi email sebelum login.
+3. Backend: isi `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, dan `ALLOWED_ORIGINS`
+   (origin frontend, tanpa slash terakhir). Gunakan environment shell/Railway;
+   backend juga memuat `.env` lokal tanpa menimpa environment Railway.
+4. Frontend: isi `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, dan
+   `VITE_API_URL` (URL backend tanpa slash terakhir). Lokal gunakan `.env.local`
+   di direktori frontend dan kosongkan VITE_API_URL untuk proxy Vite.
+   VITE_* dibaca pada build: rebuild frontend setelah perubahan.
+5. Install ulang `pip install -r requirements.txt` dan `npm ci` di frontend.
+   Backend dijalankan memakai Procfile yang tersedia. **Procfile hanya menjalankan
+   API**, belum menyajikan build React. Untuk Railway, frontend memerlukan service
+   hosting sendiri; jangan menganggap deploy API otomatis menampilkan website.
+6. Verifikasi dengan dua akun: unggah file akun A, pastikan akun B tidak bisa membaca
+   atau menghapus path A; CV >5 MB harus ditolak. Cek bucket tetap private.
+
+Tidak perlu service_role/secret key. Backend memvalidasi access token melalui
+Supabase Auth dan menggunakan token pengguna untuk upload sehingga RLS tetap
+berlaku. Koneksi live belum terverifikasi sampai proyek/variabel benar terpasang.
+Uji otomatis memakai transport Supabase tiruan dan bukan bukti cloud sudah aktif.
+
+Referensi: https://supabase.com/docs/guides/storage/security/access-control
+
+### Status verifikasi integrasi CV
+
+Pada 13 November 2026 bucket `cvs` di proyek yang dipilih telah dibuat dan
+terverifikasi `public=false`, `file_size_limit=5000000`, dengan tiga MIME type
+PDF/DOCX/TXT. Auth email/password aktif, pendaftaran aktif, konfirmasi email wajib.
+Kebijakan SQL belum diterapkan: koneksi management yang tersedia tidak memiliki
+izin pada proyek tersebut. Jalankan script setup sebelum mencoba unggahan akun.
+Tidak ada secret key disimpan dalam source atau environment aplikasi.
+
+Uji lokal: 13 tes Python dan 4 tes Playwright lulus, serta build Vite berhasil.
+Tes CV browser menggunakan mock Auth/Storage (tanpa mengirim CV ke cloud).
+Untuk menjalankan tes tersebut pada checkout bersih, jalankan Vite dengan
+`VITE_SUPABASE_URL=https://cv-test.supabase.co` dan
+`VITE_SUPABASE_PUBLISHABLE_KEY=test-publishable`, backend di port 8000,
+lalu `npx playwright test` dari frontend. Gunakan konfigurasi proyek asli untuk
+pemakaian normal. Keberhasilan RLS lintas akun belum diuji pada cloud.

@@ -9,3 +9,5 @@ frontend/playwright-report/
 .pytest_cache/
 model/artifacts/hf_cache/
 model/artifacts/embedding_model/
+.env.*
+!.env.example
