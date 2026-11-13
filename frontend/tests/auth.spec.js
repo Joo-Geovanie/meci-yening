@@ -4,7 +4,7 @@ import { mockAuth, login } from './auth-helpers.js';
 test('login gate, session restore, logout and account-specific profile', async ({ page }) => {
   await mockAuth(page);
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Selamat datang kembali.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Masuk ke Prima' })).toBeVisible();
   await expect(page.getByLabel('Unggah dan simpan CV')).toHaveCount(0);
   await expect(page.getByLabel('Minat karier')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/auth-desktop.png', fullPage: true });

@@ -18,7 +18,7 @@ test('CV login, size rejection, review skills and private deletion', async ({ pa
   await page.goto('/');
   await page.getByLabel('Email akun').fill('student@example.com');
   await page.getByLabel('Password', { exact: true }).fill('test-password');
-  await page.getByRole('button', { name: 'Masuk ke ruangperan', exact: true }).click();
+  await page.locator('form').getByRole('button', { name: 'Masuk', exact: true }).click();
   await expect(page.getByLabel('Unggah dan simpan CV')).toBeVisible();
   await page.getByLabel('Unggah dan simpan CV').setInputFiles({ name: 'large.txt', mimeType: 'text/plain', buffer: Buffer.alloc(5_000_001, 'x') });
   await expect(page.getByRole('alert')).toContainText('maksimal 5 MB');
@@ -27,10 +27,11 @@ test('CV login, size rejection, review skills and private deletion', async ({ pa
   await expect(page.getByRole('button', { name: 'Gunakan skill CV' })).toBeVisible();
   await page.getByRole('button', { name: 'Gunakan skill CV' }).click();
   await expect(page.locator('.selected-skills')).toContainText('python');
-  await page.getByRole('button', { name: 'Temukan peran saya' }).click();
+  await page.getByRole('button', { name: 'Cari rekomendasi' }).click();
   await expect(page.locator('.score-line').first()).toContainText('%');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  await page.getByRole('navigation').getByRole('button', { name: 'Profil saya' }).click();
   await page.getByText('CV tersimpan (1)', { exact: true }).click();
   await page.getByRole('button', { name: 'Hapus', exact: true }).click();
   await expect(page.getByText('CV tersimpan (0)', { exact: true })).toBeVisible();
@@ -60,5 +61,5 @@ test('signup explains short password and submits valid input without stuck curso
   await signup.click();
   await expect(page.getByText(/Pendaftaran diproses/)).toBeVisible();
   expect(signups).toBe(1);
-  await expect(page.getByRole('button', { name: 'Masuk ke ruangperan' })).toBeEnabled();
+  await expect(page.locator('form').getByRole('button', { name: 'Masuk', exact: true })).toBeEnabled();
 });

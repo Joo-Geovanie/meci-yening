@@ -213,3 +213,17 @@ Simpanan lama tanpa pemilik tidak dipindahkan otomatis ke akun mana pun.
 CV tetap berada di Supabase Storage privat dengan folder UUID pengguna.
 Login gate melindungi alur antarmuka; API katalog publik tetap dapat diakses,
 sedangkan akses CV tetap diverifikasi backend/Auth dan Storage RLS.
+
+
+## Prima: antarmuka dan nama proyek
+
+Nama produk adalah Prima. Judul penelitian: Pengembangan Sistem Rekomendasi
+Magang Berbasis Machine Learning Menggunakan Klasifikasi Teks dan Content-Based
+Filtering. Judul penelitian tidak mengubah metode inferensi yang tersedia:
+TF-IDF dengan cosine similarity dan KNN pada skill, belum classifier baru.
+
+Antarmuka memisahkan Profil saya, Rekomendasi, Tersimpan, dan Tentang Prima.
+Pengguna masuk ke profil terlebih dahulu, mengisi skill atau meninjau hasil CV,
+lalu menjalankan pencarian. Hasil ditampilkan pada halaman rekomendasi, dengan
+opsi Edit profil. Katalog tetap dapat dijelajahi dari tab Rekomendasi.
+Nama key localStorage lama dipertahankan untuk menjaga simpanan pengguna.

@@ -15,6 +15,6 @@ export async function mockAuth(page) {
 export async function login(page, email = 'student@example.com') {
   await page.getByLabel('Email akun').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('test-password-123');
-  await page.getByRole('button', { name: 'Masuk ke ruangperan', exact: true }).click();
+  await page.locator('form').getByRole('button', { name: 'Masuk', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Profil keterampilan' })).toBeVisible();
 }
