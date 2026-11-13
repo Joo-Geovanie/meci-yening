@@ -18,4 +18,5 @@ COPY backend/ ./backend/
 COPY model/recommender.py ./model/recommender.py
 COPY model/artifacts/recommender.joblib ./model/artifacts/recommender.joblib
 COPY --from=frontend /build/frontend/dist ./frontend/dist
+RUN python -c "from model.recommender import load_model; load_model()"
 CMD ["python", "-m", "backend.serve"]
