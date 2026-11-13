@@ -143,9 +143,9 @@ masih tersimpan di browser. Sesi login disimpan di memori (masuk ulang setelah r
    di direktori frontend dan kosongkan VITE_API_URL untuk proxy Vite.
    VITE_* dibaca pada build: rebuild frontend setelah perubahan.
 5. Install ulang `pip install -r requirements.txt` dan `npm ci` di frontend.
-   Backend dijalankan memakai Procfile yang tersedia. **Procfile hanya menjalankan
-   API**, belum menyajikan build React. Untuk Railway, frontend memerlukan service
-   hosting sendiri; jangan menganggap deploy API otomatis menampilkan website.
+   Backend dijalankan memakai Procfile yang tersedia. Railway memakai Dockerfile di root untuk membangun React dan menjalankan FastAPI
+   dalam satu service. Frontend disajikan di `/`, API tersedia di `/api/*`
+   dan endpoint lama tetap didukung. Tidak memerlukan service frontend terpisah.
 6. Verifikasi dengan dua akun: unggah file akun A, pastikan akun B tidak bisa membaca
    atau menghapus path A; CV >5 MB harus ditolak. Cek bucket tetap private.
 
@@ -172,3 +172,24 @@ Untuk menjalankan tes tersebut pada checkout bersih, jalankan Vite dengan
 `VITE_SUPABASE_PUBLISHABLE_KEY=test-publishable`, backend di port 8000,
 lalu `npx playwright test` dari frontend. Gunakan konfigurasi proyek asli untuk
 pemakaian normal. Keberhasilan RLS lintas akun belum diuji pada cloud.
+
+
+## Deploy Railway satu domain
+
+`railway.json` memilih Dockerfile. Tahap Node membangun frontend memakai `npm ci`
+dan `npm run build`; tahap Python memuat model dan menyajikan hasil build React.
+Gunakan Root Directory root repo, bukan `frontend` atau `backend`. Biarkan Start
+Command memakai CMD Dockerfile. Healthcheck `/health`. PORT diberikan Railway.
+Build gagal lebih awal bila frontend tidak tersedia pada image production.
+
+Variabel pada service yang sama: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `ALLOWED_ORIGINS` (domain
+website HTTPS). `VITE_API_URL=/api` direkomendasikan, atau URL domain service
+ini tanpa trailing slash untuk kompatibilitas endpoint lama.
+VITE_* diteruskan sebagai build arguments; perubahan nilainya perlu rebuild.
+Tidak ada secret/service_role yang diperlukan untuk build maupun runtime.
+`.dockerignore` mengecualikan .env, node_modules, virtualenv, dan cache model.
+
+Verifikasi lokal: `npm run build` di frontend, lalu `python -m pytest -q` di root.
+Tes deployment memastikan `/` menghasilkan HTML, aset JS/CSS dapat diambil,
+`/api/catalog` dan `/api/recommend` bekerja, serta `.env` tidak bisa diakses.

@@ -17,6 +17,8 @@ from model.recommender import ARTIFACT, load_model, recommend
 async def lifespan(app):
     if not ARTIFACT.exists():
         raise RuntimeError("Artefak belum tersedia. Jalankan notebook sampai bagian export.")
+    if os.getenv("REQUIRE_FRONTEND") == "1" and not (FRONTEND_DIST / "index.html").is_file():
+        raise RuntimeError("Build frontend tidak ditemukan. Deploy menggunakan Dockerfile dari root proyek.")
     app.state.bundle = load_model()
     yield
 
@@ -43,11 +45,13 @@ class Profile(BaseModel):
         return values
 
 
+@app.get("/api/health")
 @app.get("/health")
 def health():
     return {"status": "ok", "rows": len(app.state.bundle["jobs"]), "mode": "local-prototype"}
 
 
+@app.get("/api/catalog")
 @app.get("/catalog")
 def catalog():
     bundle = app.state.bundle
@@ -63,6 +67,7 @@ def catalog():
             "preview_jobs": candidates.sort_values(["category", "job_id"])[preview_columns].to_dict("records")}
 
 
+@app.post("/api/recommend")
 @app.post("/recommend")
 def recommendations(profile: Profile):
     try:
@@ -71,6 +76,7 @@ def recommendations(profile: Profile):
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
+@app.get("/api/jobs")
 @app.get("/jobs")
 def jobs(limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0)):
     data = app.state.bundle["jobs"]
@@ -85,6 +91,7 @@ from uuid import UUID, uuid4
 from backend.cv import MAX_CV_BYTES, MIME_TYPES, extract_skills
 
 
+@app.post("/api/cv")
 @app.post("/cv")
 async def upload_cv(request: Request, extension: Literal["pdf", "docx", "txt"]):
     url = os.getenv("SUPABASE_URL", "").rstrip("/")
@@ -123,3 +130,10 @@ async def upload_cv(request: Request, extension: Literal["pdf", "docx", "txt"]):
                     "message": "CV tersimpan privat. Tinjau skill terdeteksi sebelum mencari rekomendasi."}
     except httpx.HTTPError as error:
         raise HTTPException(502, "Koneksi Supabase gagal. Coba kembali atau periksa daftar CV sebelum mengulang unggahan.") from error
+
+
+# Daftarkan frontend terakhir agar /api dan endpoint lama tetap menuju API.
+from fastapi.staticfiles import StaticFiles
+FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+if (FRONTEND_DIST / "index.html").is_file():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
