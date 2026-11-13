@@ -125,7 +125,7 @@ TF-IDF + cosine similarity tetap menggunakan skill yang ditinjau dan minat,
 bukan seluruh CV, nama, email, atau nomor telepon. Skor 0–100% adalah kemiripan,
 bukan probabilitas diterima. KNN tetap tersedia sebagai pembanding skill persis.
 File dan teks CV tidak ditaruh di localStorage; skill profil dan simpanan peran
-masih tersimpan di browser. Sesi login disimpan di memori (masuk ulang setelah reload).
+masih tersimpan di browser. Sesi login dipertahankan oleh Supabase di browser sampai logout atau sesi berakhir.
 
 ### Konfigurasi
 
@@ -197,3 +197,19 @@ Tes deployment memastikan `/` menghasilkan HTML, aset JS/CSS dapat diambil,
 Catatan: pengaturan service Railway production sudah disesuaikan langsung:
 Start Command `python -m backend.serve` dan Healthcheck Path `/health`.
 `railway.json` tidak digunakan karena Config as Code lama sudah deprecated.
+
+
+## Alur akun dan profil
+
+Halaman awal khusus Masuk / Buat akun. Form daftar meminta konfirmasi password
+(minimal 8 karakter), lalu mengarahkan pengguna untuk mengonfirmasi email.
+Pendaftaran memakai Supabase Auth dan terlihat pada Authentication > Users,
+bukan tabel profil public buatan sendiri. Setelah login, halaman profil memuat
+unggah CV, input skill, dan rekomendasi. Tombol Keluar tersedia di bagian atas.
+
+Sesi bertahan setelah refresh. Skill profil dan peran tersimpan masih lokal di
+browser, kini dipisahkan berdasarkan UUID akun; belum disinkronkan ke database.
+Simpanan lama tanpa pemilik tidak dipindahkan otomatis ke akun mana pun.
+CV tetap berada di Supabase Storage privat dengan folder UUID pengguna.
+Login gate melindungi alur antarmuka; API katalog publik tetap dapat diakses,
+sedangkan akses CV tetap diverifikasi backend/Auth dan Storage RLS.

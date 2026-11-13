@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { mockAuth, login } from './auth-helpers.js';
+test.beforeEach(async ({ page }) => { await mockAuth(page); await page.goto('/'); await login(page); });
 
 test('catalog, profile, stale results, detail, saved snapshot and download', async ({ page }) => {
   const errors = [];
@@ -61,7 +63,7 @@ test('mobile, empty search, unknown skill, reset and guide', async ({ page }) =>
 });
 
 test('failed catalog has a working retry and corrupted storage is tolerated', async ({ page }) => {
-  await page.addInitScript(() => { localStorage.setItem('ruang-peran-profile-v2', '{'); localStorage.setItem('ruang-peran-saved-v1', 'null'); });
+  await page.addInitScript(() => { localStorage.setItem('ruang-peran-profile-v2:11111111-1111-4111-8111-111111111111', '{'); localStorage.setItem('ruang-peran-saved-v1:11111111-1111-4111-8111-111111111111', 'null'); });
   await page.route('**/api/catalog', route => route.abort());
   await page.goto('/');
   await expect(page.getByRole('alert')).toBeVisible();

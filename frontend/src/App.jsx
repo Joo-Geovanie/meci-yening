@@ -20,13 +20,13 @@ const presets = [
 const emptyProfile = { skills: [], interest: '', category: '', scope: 'internship', method: 'tfidf' };
 function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function strings(value) { return Array.isArray(value) && value.every(s => typeof s === 'string'); }
-function readProfile() {
-  const p = readJson(DRAFT, null);
+function readProfile(userId) {
+  const p = readJson(`${DRAFT}:${userId}`, null);
   if (!p || !strings(p.skills) || p.skills.length > 50 || p.skills.some(s => !s.trim() || s.length > 100)) return emptyProfile;
   return { skills: p.skills, interest: typeof p.interest === 'string' ? p.interest.slice(0, 500) : '', category: Object.hasOwn(fields, p.category) ? p.category : '', scope: ['internship', 'early_career', 'all'].includes(p.scope) ? p.scope : 'internship', method: p.method === 'knn' ? 'knn' : 'tfidf' };
 }
-function readSaved() {
-  const items = readJson(STORE, []);
+function readSaved(userId) {
+  const items = readJson(`${STORE}:${userId}`, []);
   return Array.isArray(items) ? items.filter(x => x && Number.isInteger(x.job_id) && typeof x.job_title === 'string' && typeof x.job_description === 'string' && Object.hasOwn(fields, x.category) && (x.score == null ? strings(x.skills) : Number.isFinite(x.score) && strings(x.matched_skills) && strings(x.missing_skills) && typeof x.explanation === 'string')).slice(0, 50) : [];
 }
 function signature(p) { return JSON.stringify({ ...p, skills: [...p.skills].sort() }); }
@@ -65,12 +65,13 @@ function RoleDetail({ job, onClose, onSave, saved }) {
   </dialog>;
 }
 
-export default function App() {
-  const [profile, setProfile] = useState(readProfile);
+export default function App({ session }) {
+  const STORE = `ruang-peran-saved-v1:${session.user.id}`, DRAFT = `ruang-peran-profile-v2:${session.user.id}`;
+  const [profile, setProfile] = useState(() => readProfile(session.user.id));
   const [catalog, setCatalog] = useState(null), [catalogLoading, setCatalogLoading] = useState(true);
   const [skillText, setSkillText] = useState(''), [result, setResult] = useState(null), [searched, setSearched] = useState(null);
   const [loading, setLoading] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
-  const [saved, setSaved] = useState(readSaved), [view, setView] = useState('explore'), [selected, setSelected] = useState(null);
+  const [saved, setSaved] = useState(() => readSaved(session.user.id)), [view, setView] = useState('explore'), [selected, setSelected] = useState(null);
   const [browseField, setBrowseField] = useState(''), [more, setMore] = useState(false), [query, setQuery] = useState('');
   const resultsRef = useRef(null), skillInput = useRef(null);
   function update(values) { setProfile(p => ({ ...p, ...values })); }
@@ -136,7 +137,7 @@ export default function App() {
         ['Simpanan milik browser ini', 'Skor tersimpan mengikuti profil saat pencarian. Mengubah profil tidak menghitung ulang simpanan. Simpanan peran tetap lokal; akun Supabase digunakan untuk CV privat. Kamu bisa mengunduh simpanan sebagai JSON.'],
       ].map(([title, text], i) => <article key={title}><span>{String(i + 1).padStart(2, '0')}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}<a className="source-link" href="https://huggingface.co/datasets/batuhanmtl/job-skill-set" target="_blank" rel="noreferrer">Buka dataset asli <ArrowUpRight size={16}/></a></div></section> : <div id="workspace" className="workspace">
         <aside className="profile-panel"><div className="panel-title"><span className="profile-symbol"><Users size={20}/></span><div><h2>Profil keterampilan</h2><p>Mulai dari yang kamu bisa.</p></div><button className="icon-button" aria-label="Reset profil" disabled={loading} onClick={() => { setProfile(emptyProfile); setSkillText(''); setNotice('Profil dikosongkan.'); }}><RotateCcw size={16}/></button></div>
-          <CvUpload disabled={loading} onSkills={skills => { update({ skills, method: "tfidf" }); setSkillText(""); }}/><form onSubmit={search}><fieldset disabled={loading}><div className="preset-label">Coba contoh profil</div><div className="presets">{presets.map(p => <button type="button" key={p.name} onClick={() => { update({ skills: p.skills, interest: p.interest, category: p.category }); setSkillText(''); }}>{p.name}</button>)}</div>
+          <CvUpload session={session} disabled={loading} onSkills={skills => { update({ skills, method: "tfidf" }); setSkillText(""); }}/><form onSubmit={search}><fieldset disabled={loading}><div className="preset-label">Coba contoh profil</div><div className="presets">{presets.map(p => <button type="button" key={p.name} onClick={() => { update({ skills: p.skills, interest: p.interest, category: p.category }); setSkillText(''); }}>{p.name}</button>)}</div>
             <label htmlFor="skill">Keterampilan <span>{profile.skills.length}/50</span></label><div className="skill-input"><Search size={16}/><input ref={skillInput} id="skill" value={skillText} maxLength={500} onChange={e => setSkillText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkills(skillText.split(',')); } }} placeholder="Cari skill, misalnya Python" autoComplete="off"/><button type="button" className="icon-button" aria-label="Tambahkan skill" onClick={() => addSkills(skillText.split(','))}><Plus size={18}/></button></div>
             <p className="help">Enter untuk menambah. Pisahkan beberapa skill dengan koma.</p><div className="selected-skills">{profile.skills.map(s => <span key={s}>{s}<button type="button" aria-label={`Hapus skill ${s}`} onClick={() => update({ skills: profile.skills.filter(x => x !== s) })}><X size={13}/></button></span>)}</div>
             {catalog && <div className="suggestions"><small>{skillText ? 'Ditemukan di katalog' : 'Sering muncul di kandidat magang'}</small><div>{suggested.map(s => <button type="button" key={s} onClick={() => addSkills([s])}><Plus size={11}/>{s}</button>)}{skillText && !suggested.length && <p className="help">Belum ada istilah persis. Kamu tetap bisa menambahkannya.</p>}</div></div>}

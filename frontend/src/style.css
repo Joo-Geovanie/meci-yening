@@ -29,3 +29,40 @@ fieldset { padding:0; border:0; margin:0; min-width:0; } label { display:flex; a
 .cv-panel .skill-tags { margin: 12px 0; }
 .cv-file { display: flex; gap: 8px; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
 .cv-error { color: #a32828; font-size: 13px; }
+
+/* Halaman akses akun terpisah dari ruang kerja profil. */
+.auth-page { width:100%; min-height:100vh; display:grid; grid-template-columns:1fr 1fr; margin:0; max-width:none; }
+.auth-story { background:#303c8c; color:#fff; padding:48px clamp(28px,5vw,90px); display:flex; flex-direction:column; justify-content:space-between; }
+.auth-story .brand { color:white; }
+.auth-story .brand span { color:#c8d0ff; }
+.auth-intro { margin:70px 0; max-width:490px; }
+.auth-intro h1 { font-size:clamp(36px,4vw,58px); line-height:1.12; letter-spacing:-2px; margin:22px 0; }
+.auth-intro>p { color:#dbe1ff; font-size:16px; line-height:1.8; }
+.auth-steps { padding:0; list-style:none; margin:42px 0 0; }
+.auth-steps li { display:flex; gap:18px; margin:26px 0; align-items:flex-start; }
+.auth-steps svg { color:#c4ccff; margin-top:3px; }
+.auth-steps strong,.auth-steps span { display:block; }
+.auth-steps strong { font-size:15px; margin-bottom:7px; }
+.auth-steps span,.auth-footnote { color:#dbe1ff; font-size:13px; line-height:1.7; }
+.auth-form-area { display:flex; align-items:center; justify-content:center; background:#fff; padding:48px 32px; }
+.auth-form-card { width:100%; max-width:400px; }
+.auth-switch { display:flex; border-bottom:1px solid #dce1ee; margin-bottom:36px; gap:28px; }
+.auth-switch button { padding:14px 0; border-bottom:3px solid transparent; font-weight:600; color:#69748d; }
+.auth-switch button[aria-pressed=true] { border-color:#4653bc; color:#3847ad; }
+.auth-form-card h2 { font-size:28px; letter-spacing:-.7px; margin:0 0 12px; }
+.auth-caption { color:#65718a; line-height:1.7; margin-bottom:28px; }
+.auth-form-card fieldset { border:0; margin:0; padding:0; min-width:0; }
+.auth-form-card label { display:block; font-size:14px; font-weight:600; margin:22px 0 9px; }
+.auth-form-card input { width:100%; height:48px; border:1px solid #cdd5e7; border-radius:7px; padding:12px; background:#fff; }
+.password-field { position:relative; }
+.password-field input { padding-right:48px; }
+.password-field button { position:absolute; right:0; top:0; height:48px; width:46px; display:grid; place-items:center; color:#66738c; }
+.auth-submit { width:100%; margin-top:28px; justify-content:center; min-height:48px; }
+.auth-message { background:#edf4ef; color:#285b3d; padding:14px; font-size:14px; line-height:1.7; border-radius:6px; margin-top:18px; }
+.auth-privacy { color:#65718a; font-size:12px; line-height:1.7; margin-top:28px; }
+.auth-loading { padding:60px 24px; text-align:center; }
+.account-bar { background:#e9edf9; padding:10px max(24px,calc((100vw - 1310px)/2)); display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:12px; flex-wrap:wrap; }
+.account-bar span { overflow-wrap:anywhere; }
+.account-bar button { display:flex; align-items:center; gap:7px; min-height:32px; }
+.account-bar p { width:100%; color:#a32828; }
+@media(max-width:760px) { .auth-page { grid-template-columns:1fr; } .auth-story { padding:28px 24px; } .auth-intro { margin:30px 0 0; } .auth-intro h1 { font-size:38px; letter-spacing:-1px; } .auth-steps,.auth-footnote { display:none; } .auth-form-area { padding:28px 24px 48px; } .auth-switch { margin-bottom:26px; } }
