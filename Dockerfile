@@ -18,4 +18,4 @@ COPY backend/ ./backend/
 COPY model/recommender.py ./model/recommender.py
 COPY model/artifacts/recommender.joblib ./model/artifacts/recommender.joblib
 COPY --from=frontend /build/frontend/dist ./frontend/dist
-CMD ["sh", "-c", "exec python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["python", "-m", "backend.serve"]
