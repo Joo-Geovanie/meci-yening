@@ -176,10 +176,10 @@ pemakaian normal. Keberhasilan RLS lintas akun belum diuji pada cloud.
 
 ## Deploy Railway satu domain
 
-`railway.json` memilih Dockerfile. Tahap Node membangun frontend memakai `npm ci`
+Railway mendeteksi Dockerfile di root repo secara otomatis. Tahap Node membangun frontend memakai `npm ci`
 dan `npm run build`; tahap Python memuat model dan menyajikan hasil build React.
-Gunakan Root Directory root repo, bukan `frontend` atau `backend`. Biarkan Start
-Command memakai CMD Dockerfile. Healthcheck `/health`. PORT diberikan Railway.
+Gunakan Root Directory root repo, bukan `frontend` atau `backend`. Atur Start
+Command ke `python -m backend.serve` atau gunakan CMD Dockerfile. Healthcheck `/health`. PORT diberikan Railway.
 Build gagal lebih awal bila frontend tidak tersedia pada image production.
 
 Variabel pada service yang sama: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
@@ -193,3 +193,7 @@ Tidak ada secret/service_role yang diperlukan untuk build maupun runtime.
 Verifikasi lokal: `npm run build` di frontend, lalu `python -m pytest -q` di root.
 Tes deployment memastikan `/` menghasilkan HTML, aset JS/CSS dapat diambil,
 `/api/catalog` dan `/api/recommend` bekerja, serta `.env` tidak bisa diakses.
+
+Catatan: pengaturan service Railway production sudah disesuaikan langsung:
+Start Command `python -m backend.serve` dan Healthcheck Path `/health`.
+`railway.json` tidak digunakan karena Config as Code lama sudah deprecated.
