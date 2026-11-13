@@ -36,3 +36,26 @@ test('CV login, size rejection, review skills and private deletion', async ({ pa
   await expect(page.getByText('CV tersimpan (0)', { exact: true })).toBeVisible();
   expect(deleted).toBe(true);
 });
+
+test('signup explains short password and submits valid input without stuck cursor', async ({ page }) => {
+  let signups = 0;
+  await page.route('https://*.supabase.co/auth/v1/signup', route => {
+    signups++;
+    return route.fulfill({ json: { user: { id: 'test-user', email: 'student@example.com' }, session: null } });
+  });
+  await page.goto('/');
+  const signup = page.getByRole('button', { name: 'Daftar akun', exact: true });
+  await expect(signup).toBeEnabled();
+  await page.getByLabel('Email akun').fill('student@example.com');
+  await page.getByLabel('Password', { exact: true }).fill('abcd');
+  await signup.hover();
+  await expect(signup).toHaveCSS('cursor', 'pointer');
+  await signup.click();
+  await expect(page.getByRole('region', { name: 'Unggah CV' }).getByRole('alert')).toContainText('minimal 8 karakter');
+  expect(signups).toBe(0);
+  await page.getByLabel('Password', { exact: true }).fill('test-password-123');
+  await signup.click();
+  await expect(page.getByText(/Pendaftaran diproses/)).toBeVisible();
+  expect(signups).toBe(1);
+  await expect(signup).toBeEnabled();
+});
